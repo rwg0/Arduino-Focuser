@@ -38,8 +38,8 @@ void AF_Stepper::onestep(uint8_t dir) {
   digitalWrite(dirPin, dir ? HIGH : LOW) ;
 
   digitalWrite(stepPin, HIGH);
-  delayMicroseconds(200);
+  delayMicroseconds(20);
   digitalWrite(stepPin, LOW);
-  delayMicroseconds(200);
+  delayMicroseconds(20);
 }
 

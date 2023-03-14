@@ -4,11 +4,10 @@
 
 #define DEGREES_PER_STEP 1.8
 
-#define FASTSPEED 400
+#define FASTSPEED 200
 #define SLOWSPEED 80
 
-#define FAST 200 // Move fast if move is more than 100
-#define SLOWSTEPS 40 // Perform last 10 steps slowly
+#define FAST 100 // Move fast if move is more than 100
 
 #include <inttypes.h>
 #include <avr/io.h>
