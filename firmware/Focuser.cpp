@@ -1,14 +1,13 @@
-
-
+#include <HardwareSerial.h>
 //ADDED FOR COMPATIBILITY WITH WIRING
 extern "C" {
   #include <stdlib.h>
 }
 
-#include "WProgram.h"
+//#include "WProgram.h"
 #include "Focuser.h"
 
-AF_Stepper motor(360 / DEGREES_PER_STEP, 2); // Create our stepper motor. I have mine on port 2 of the motor shield.
+AF_Stepper motor; // Create our stepper motor. I have mine on port 2 of the motor shield.
 
 long position = 0;
 bool reversed = false;
@@ -27,8 +26,8 @@ Focuser::Focuser(void)
 void Focuser::interpretCommand(Messenger *message)
 {
   message->readChar(); // Reads ":"
+
   char command = message->readChar(); // Read the command
-  
   switch(command){
     case 'M': // Move
       move(message->readLong());
@@ -78,16 +77,17 @@ void Focuser::move(long val)
   if(abs(move) > FAST)
   {
     long fastSteps = move - ((move > 0)?SLOWSTEPS:(SLOWSTEPS * -1));
-    
+
     motor.setSpeed(FASTSPEED);
-    step(fastSteps, DOUBLE);
+    step(fastSteps);
     
     motor.setSpeed(SLOWSPEED);
-    step(((move > 0)?SLOWSTEPS:(SLOWSTEPS * -1)), MICROSTEP);
+    step(((move > 0)?SLOWSTEPS:(SLOWSTEPS * -1)));
   }
   else
   {
-    step(move, MICROSTEP);
+    motor.setSpeed(SLOWSPEED);
+    step(move);
   }
   
   motor.release(); // Release the motors when done. This works well for me but might not for others
@@ -95,14 +95,14 @@ void Focuser::move(long val)
   Serial.println(position);
 }
 
-void Focuser::step(long val, uint8_t steptype)
+void Focuser::step(long val)
 {
   if (val > 0) { // If move is positive, move forward
     while(val--)
     {
       if(Serial.available() > 0)
         break;
-      motor.step(1, (reversed)?FORWARD:BACKWARD, steptype);
+      motor.step(1, (reversed)?FORWARD:BACKWARD);
       position++;
     }
   }
@@ -112,7 +112,7 @@ void Focuser::step(long val, uint8_t steptype)
     {
       if(Serial.available() > 0 || position == 0)
         break;
-      motor.step(1, (reversed)?BACKWARD:FORWARD, steptype);
+      motor.step(1, (reversed)?BACKWARD:FORWARD);
       position--;
     }
   } 

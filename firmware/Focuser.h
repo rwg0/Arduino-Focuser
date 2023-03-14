@@ -4,11 +4,11 @@
 
 #define DEGREES_PER_STEP 1.8
 
-#define FASTSPEED 100
-#define SLOWSPEED 10
+#define FASTSPEED 400
+#define SLOWSPEED 80
 
-#define FAST 100 // Move fast if move is more than 100
-#define SLOWSTEPS 10 // Perform last 10 steps slowly
+#define FAST 200 // Move fast if move is more than 100
+#define SLOWSTEPS 40 // Perform last 10 steps slowly
 
 #include <inttypes.h>
 #include <avr/io.h>
@@ -25,7 +25,7 @@ class Focuser
     void reverse(bool rev); // For setting motor polarity
   private:
     void printPosition(); // Prints current position to serial
-    void step(long val, uint8_t steptype);
+    void step(long val);
     long position;
     bool reversed;
 };
