@@ -20,6 +20,11 @@ Focuser::Focuser(void)
   motor.setSpeed(10); // Set a default RPM of 10
 }
 
+void printOK()
+{
+  Serial.println("OK");
+}
+
 //
 // Function for interpreting a command string of the format ": COMMAND <ARGUMENT> #"
 //
@@ -31,23 +36,27 @@ void Focuser::interpretCommand(Messenger *message)
   switch(command){
     case 'M': // Move
       move(message->readLong());
-      break;
+      return;
     case 'R': // Release motor coils
       reverse(message->readInt());
-      break;
+      printOK();
+      return;
     case 'L':
       motor.release();
-      break;
+      printOK();
+      return;
     case 'P':
       setPosition(message->readLong());
-      break;
+      return;
     case 'G':
       printPosition();
-      break;
+      return;
     case 'H':
       Serial.flush();
-      break;
+      printPosition();
+      return;
   }
+  Serial.println("ERR");
 }
 
 void Focuser::setPosition(long newpos)
