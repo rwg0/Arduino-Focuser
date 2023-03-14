@@ -1,5 +1,3 @@
-// green yellow - black red
-
 #include "Focuser.h"
 #include "Messenger.h"
 
@@ -23,5 +21,3 @@ void messageCompleted(){
 void loop(){
   while(Serial.available()) message.process(Serial.read());
 }
-
-
