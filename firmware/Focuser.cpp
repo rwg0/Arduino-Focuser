@@ -80,32 +80,29 @@ void Focuser::move(long val) {
   long move = val - position;  // calculate move
   int dir = move > 0 ? 1 : -1;
   int dist = abs(move);
-  if (dist > FAST) {
-    int moved = 0;
-    int fastest = 0;
-    motor.setSpeed(FASTSPEED / 10);
-    for (int i = 1; i <= 10; i++) {
-      int steps = i + 5;
-      if ((moved + steps) * 2 >= dist)
-        break;
-      motor.setSpeed(i * FASTSPEED / 10);
-      step(steps * dir);
-      moved += steps;
-      fastest = i;
-    }
 
-    step(dir * (dist - 2 * moved));
-
-    for (int i = fastest; i >= 1; i--) {
-      int steps = i + 5;
-      motor.setSpeed(i * FASTSPEED / 10);
-      step(steps * dir);
-    }
-
-  } else {
-    motor.setSpeed(SLOWSPEED);
-    step(move);
+  int moved = 0;
+  int fastest = 0;
+  motor.setSpeed(FASTSPEED / 10);
+  for (int i = 1; i <= 10; i++) {
+    int steps = i + 5;
+    if ((moved + steps) * 2 >= dist)
+      break;
+    motor.setSpeed(i * FASTSPEED / 10);
+    step(steps * dir);
+    moved += steps;
+    fastest = i;
   }
+
+  step(dir * (dist - 2 * moved));
+
+  for (int i = fastest; i >= 1; i--) {
+    int steps = i + 5;
+    motor.setSpeed(i * FASTSPEED / 10);
+    step(steps * dir);
+  }
+
+
 
   motor.release();  // Release the motors when done. This works well for me but might not for others
   Serial.print("P ");
