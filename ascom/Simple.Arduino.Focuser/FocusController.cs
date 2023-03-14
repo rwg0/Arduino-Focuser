@@ -11,7 +11,7 @@ namespace ASCOM.Simple.Arduino.Focuser
 {
     class FocusController : IDisposable, INotifyPropertyChanged
     {
-        readonly SerialPort m_port;
+        private readonly SerialPort m_port;
         private bool _isMoving;
         private string _pending = "";
         private readonly ConcurrentQueue<string> _readLines = new ConcurrentQueue<string>();
@@ -121,6 +121,11 @@ namespace ASCOM.Simple.Arduino.Focuser
             SendCommand($"P {position}");
         }
 
+        public void SetReverse(bool reverse)
+        {
+            SendCommand($"R {(reverse ? 1 : 0)}");
+        }
+
         private void SendCommand(string s, int timeout = 1000)
         {
             SendRawCommand(s);
@@ -196,14 +201,7 @@ namespace ASCOM.Simple.Arduino.Focuser
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
 
-        protected bool SetField<T>(ref T field, T value, string propertyName)
-        {
-            if (EqualityComparer<T>.Default.Equals(field, value))
-                return false;
-            field = value;
-            OnPropertyChanged(propertyName);
-            return true;
-        }
+
     }
 
 }

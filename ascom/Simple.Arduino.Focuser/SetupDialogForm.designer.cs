@@ -35,7 +35,9 @@ namespace ASCOM.Simple.Arduino.Focuser
             this.checkBox1 = new System.Windows.Forms.CheckBox();
             this.picASCOM = new System.Windows.Forms.PictureBox();
             this.button1 = new System.Windows.Forms.Button();
+            this.numericUpDown1 = new System.Windows.Forms.NumericUpDown();
             ((System.ComponentModel.ISupportInitialize)(this.picASCOM)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.numericUpDown1)).BeginInit();
             this.SuspendLayout();
             // 
             // cmdOK
@@ -111,9 +113,21 @@ namespace ASCOM.Simple.Arduino.Focuser
             this.button1.Name = "button1";
             this.button1.Size = new System.Drawing.Size(94, 25);
             this.button1.TabIndex = 7;
-            this.button1.Text = "Reset Position";
+            this.button1.Text = "Set Position";
             this.button1.UseVisualStyleBackColor = true;
             this.button1.Click += new System.EventHandler(this.button1_Click);
+            // 
+            // numericUpDown1
+            // 
+            this.numericUpDown1.Location = new System.Drawing.Point(7, 102);
+            this.numericUpDown1.Maximum = new decimal(new int[] {
+            100000,
+            0,
+            0,
+            0});
+            this.numericUpDown1.Name = "numericUpDown1";
+            this.numericUpDown1.Size = new System.Drawing.Size(103, 20);
+            this.numericUpDown1.TabIndex = 8;
             // 
             // SetupDialogForm
             // 
@@ -122,6 +136,7 @@ namespace ASCOM.Simple.Arduino.Focuser
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.CancelButton = this.cmdCancel;
             this.ClientSize = new System.Drawing.Size(222, 213);
+            this.Controls.Add(this.numericUpDown1);
             this.Controls.Add(this.button1);
             this.Controls.Add(this.checkBox1);
             this.Controls.Add(this.comboBox1);
@@ -137,6 +152,7 @@ namespace ASCOM.Simple.Arduino.Focuser
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "Simple.Arduino.Focuser Setup";
             ((System.ComponentModel.ISupportInitialize)(this.picASCOM)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.numericUpDown1)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -151,5 +167,6 @@ namespace ASCOM.Simple.Arduino.Focuser
         private System.Windows.Forms.ComboBox comboBox1;
         private System.Windows.Forms.CheckBox checkBox1;
         private System.Windows.Forms.Button button1;
+        private System.Windows.Forms.NumericUpDown numericUpDown1;
     }
 }

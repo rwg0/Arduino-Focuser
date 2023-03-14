@@ -1,6 +1,5 @@
 //tabs=4
 // --------------------------------------------------------------------------------
-// TODO fill in this information for your driver, then remove this line!
 //
 // ASCOM Focuser driver for Simple.Arduino.Focuser
 //
@@ -48,7 +47,6 @@ namespace ASCOM.Simple.Arduino.Focuser
         // Driver ID and descriptive string that shows in the Chooser
         //
         private static string s_csDriverID = "ASCOM.Simple.Arduino.Focuser.Focuser";
-        // TODO Change the descriptive string for your driver then remove this line
         private static string s_csDriverDescription = "Simple Arduino Focuser";
 
 
@@ -116,6 +114,7 @@ namespace ASCOM.Simple.Arduino.Focuser
         {
             if (_controller != null)
             {
+                SavePosition(_controller.Position);
                 _controller.PropertyChanged -= ControllerOnPropertyChanged;
                 _controller?.Dispose();
                 _controller = null;
@@ -183,10 +182,23 @@ namespace ASCOM.Simple.Arduino.Focuser
             }
             _controller.PropertyChanged += ControllerOnPropertyChanged;
             _controller.InitializePosition(GetSavedPosition());
+            _controller.SetReverse(_reversed);
         }
 
         private void ControllerOnPropertyChanged(object sender, PropertyChangedEventArgs e)
         {
+            if (e.PropertyName == nameof(FocusController.IsMoving))
+            {
+                if (_controller != null && !_controller.IsMoving)
+                {
+                    SavePosition(_controller.Position);
+                }
+            }
+        }
+
+        private void SavePosition(int position)
+        {
+            SetValue("LastPos", position.ToString());
         }
 
         private string GetPort()
@@ -213,7 +225,7 @@ namespace ASCOM.Simple.Arduino.Focuser
 
             _controller.MoveTo(val);
 
-//            SetValue("LastPos", _position.ToString());
+//            
         }
 
         public bool Connected
@@ -240,15 +252,21 @@ namespace ASCOM.Simple.Arduino.Focuser
 
         public void SetupDialog()
         {
-            SetupDialogForm sf = new SetupDialogForm(GetPort(), _reversed, 100) {Position = GetSavedPosition()};
+            var initialPosition = _controller?.Position ?? GetSavedPosition();
+            SetupDialogForm sf = new SetupDialogForm(GetPort(), _reversed, initialPosition);
             if (sf.ShowDialog() == System.Windows.Forms.DialogResult.OK)
             {
                 SetPort(sf.GetSelectedPort());
                 SetValue("reverse", sf.IsReversed().ToString());
                 if (_controller != null)
                 {
+                    _controller.InitializePosition(sf.Position);
                     CleanupController();
                     BuildController();
+                }
+                else
+                {
+                    SavePosition(sf.Position);
                 }
                 SetFlags();
             }
