@@ -55,6 +55,9 @@ void Focuser::interpretCommand(Messenger *message)
       Serial.flush();
       printPosition();
       return;
+    case 'I':
+      Serial.println("R Simple.Arduino.Focuser");
+      return;
   }
   Serial.println("ERR");
 }
