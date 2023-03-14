@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Collections;
-using System.Collections.Generic;
 using System.ComponentModel;
 using System.Configuration.Install;
 using System.Diagnostics;
@@ -51,6 +49,7 @@ namespace ASCOM.Simple.Arduino.Focuser
                 Process.Start(regasm, cmdLine).WaitForExit(5000);
             }
 
+            base.Uninstall(savedState);
         }
 
     }

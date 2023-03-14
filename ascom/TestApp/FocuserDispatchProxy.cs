@@ -2,7 +2,6 @@
 using System.Reflection;
 using System.Runtime.InteropServices;
 using ASCOM.Interface;
-using SharpCap.Base;
 
 namespace TestApp
 {

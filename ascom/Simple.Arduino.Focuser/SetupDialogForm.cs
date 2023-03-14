@@ -1,9 +1,5 @@
 using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Drawing;
 using System.Runtime.InteropServices;
-using System.Text;
 using System.Windows.Forms;
 using System.IO.Ports;
 
@@ -12,7 +8,7 @@ namespace ASCOM.Simple.Arduino.Focuser
     [ComVisible(false)]					// Form not registered for COM!
     public partial class SetupDialogForm : Form
     {
-        public SetupDialogForm(string defaultPort, bool reversed, bool absolute, int speed)
+        public SetupDialogForm(string defaultPort, bool reversed, int speed)
         {
             InitializeComponent();
 
@@ -34,7 +30,6 @@ namespace ASCOM.Simple.Arduino.Focuser
                 comboBox1.SelectedIndex = 0;
 
             checkBox1.Checked = reversed;
-            checkBox2.Checked = absolute;
 
             if (comboBox1.Items.Count == 0)
                 cmdOK.Enabled = false;
@@ -50,10 +45,6 @@ namespace ASCOM.Simple.Arduino.Focuser
             return checkBox1.Checked;
         }
 
-        public bool IsAbsolute()
-        {
-            return checkBox2.Checked;
-        }
 
         private void cmdOK_Click(object sender, EventArgs e)
         {

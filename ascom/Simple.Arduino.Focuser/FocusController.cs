@@ -1,25 +1,26 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.ComponentModel;
+using System.Diagnostics;
 using System.Text;
 using System.IO.Ports;
 using System.Threading;
-using System.Diagnostics;
 
 namespace ASCOM.Simple.Arduino.Focuser
 {
-    class FocusController : IDisposable
+    class FocusController : IDisposable, INotifyPropertyChanged
     {
-        const int maxMove = 1000;
-        SerialPort m_port;
-        Thread m_workerThread;
-        ThreadControl m_control = new ThreadControl();
-        private Exception _commsError;
+        readonly SerialPort m_port;
+        private bool _isMoving;
+        private string _pending = "";
+        private readonly ConcurrentQueue<string> _readLines = new ConcurrentQueue<string>();
 
         public FocusController(string portName)
         {
 
             m_port = new SerialPort(portName);
-            m_port.BaudRate = 4800;
+            m_port.BaudRate = 9600;
             m_port.Parity = Parity.None;
             m_port.DataBits = 8;
             m_port.Handshake = Handshake.None;
@@ -28,138 +29,181 @@ namespace ASCOM.Simple.Arduino.Focuser
             m_port.WriteTimeout = 500;
 
             m_port.RtsEnable = false;
+            m_port.DataReceived += _port_DataReceived;
+
             m_port.Open();
 
-            try
-            {
-                // make sure we can talk to the port
-                DoMove(1);
-                DoMove(-1);
-            }
-            catch (Exception)
-            {
-                m_port.Close();
-                throw;
-            }
+            SendRawCommand("I");
+            string id = ReadTextTimeout(1000);
 
-            m_workerThread = new Thread(new ThreadStart(ThreadProc));
-            m_workerThread.IsBackground = true;
-            m_workerThread.Start();
+            if (id?.Trim() != "R Simple.Arduino.Focuser")
+                throw new Exception($"Incorrect identification from focuser : {id}");
 
+            while (_readLines.Count > 0)
+                _readLines.TryDequeue(out var _);
         }
 
-        void ThreadProc()
+        private void _port_DataReceived(object sender, SerialDataReceivedEventArgs e)
         {
-            try
+            if (e.EventType == SerialData.Chars)
             {
-                while (!m_control.Destroyed)
+                try
                 {
-                    Thread.Sleep(1);
-                    int command = m_control.Command;
-                    if (command != 0)
-                        ProcessCommand(command);
-                    m_control.Halt = false;
+                    ReadAnyPortData();
+
+                }
+                catch (Exception exception)
+                {
+                    Trace.WriteLine(exception);
                 }
             }
-            catch (Exception e)
-            {
-                _commsError = e;
-                m_control.Moving = false;
-            }
-
         }
 
-        private void ProcessCommand(int command)
+        private void ReadAnyPortData()
         {
-            try
+            _pending += m_port.ReadExisting();
+            while (_pending.Contains("\n"))
             {
-                m_control.Moving = true;
-                DoMove(command);
-            }
-            finally
-            {
-                m_control.Moving = false;
-                m_control.Command = 0;
+                var index = _pending.IndexOf("\n");
+                var line = _pending.Substring(0, index).Trim();
+                if (string.IsNullOrWhiteSpace(line))
+                {
+                    _pending = _pending.TrimStart();
+                    continue;
+                }
+                _pending = index == _pending.Length - 1 ? "" : _pending.Substring(index);
+                if (IsMoving)
+                {
+                    ProcessPosition(line);
+                    IsMoving = false;
+                }
+                else
+                    _readLines.Enqueue(line);
             }
         }
-
-        private void DoMove(int stepSize)
-        {
-            m_port.RtsEnable = (stepSize < 0) ^ Reversed ;
-            Thread.Sleep(20);
-            for (int i = 0; i < Math.Abs(stepSize); i++)
-            {
-                if (m_control.Halt)
-                    break;
-
- //               Debug.WriteLine("Moving focuser : " + ((stepSize < 0) ? "In" : "Out"));
-                m_port.Write(new byte[1] {0x00}, 0, 1);
-            }
-            Debug.WriteLine("Move Complete");
-        }
-
-        #region IDisposable Members
 
         public void Dispose()
         {
-            if (m_port != null)
-            {
-                m_port.Close();
-            }
-            m_control.Destroyed = true;
-        }
-
-        #endregion
-
-        internal bool IsMoving()
-        {
-
-            return m_control.Moving;
-        }
-
-        internal void Halt()
-        {
-            CheckForCommsError();
-
-            if (IsMoving())
-            {
-                m_control.Halt = true;
-
-                Debug.WriteLine("Halting");
-
-                while (true)
-                {
-                    if (!IsMoving())
-                        break;
-                    Thread.Sleep(1);
-                }
-            }
-        }
-
-        private void CheckForCommsError()
-        {
-            if (_commsError != null)
-                throw new Exception("Error talking to focuser", _commsError);
-        }
-
-        internal void MoveRelative(int val)
-        {
-            CheckForCommsError();
-
-            if (Math.Abs(val) > maxMove)
-                val = Math.Sign(val) * maxMove;
-
-            Halt();
-
-            m_control.Command = val;
-        }
-
-        internal int MaxMove()
-        {
-            return maxMove;
+            m_port.DataReceived -= _port_DataReceived;
+            m_port?.Close();
         }
 
         public bool Reversed { get; set; }
+
+        public void Halt()
+        {
+            SendCommand("H", 5000);
+            IsMoving = false;
+        }
+
+        public bool IsMoving
+        {
+            get => _isMoving;
+            set
+            {
+                if (value == _isMoving)
+                    return;
+                _isMoving = value;
+                OnPropertyChanged(nameof(IsMoving));
+            }
+        }
+
+        public int MaxMove()
+        {
+            return 100000;
+        }
+
+
+        public int Position { get; private set; }
+
+        public void InitializePosition(int position)
+        {
+            SendCommand($"P {position}");
+        }
+
+        private void SendCommand(string s, int timeout = 1000)
+        {
+            SendRawCommand(s);
+            ReadPosition(timeout);
+        }
+
+        private void SendCommandAsync(string s)
+        {
+            SendRawCommand(s);
+        }
+
+        private void SendRawCommand(string s)
+        {
+            m_port.Write($": {s} #");
+        }
+
+        private void ReadPosition(int timeout)
+        {
+            var text = ReadTextTimeout(timeout);
+
+            if (string.IsNullOrWhiteSpace(text))
+                throw new Exception("No reply from focuser");
+
+            ProcessPosition(text);
+        }
+
+        private void ProcessPosition(string text)
+        {
+            text = text.Trim();
+
+            switch (text)
+            {
+                case "OK":
+                    return;
+                case "ERR":
+                    throw new Exception("Error reply from focuser");
+                case string s when s.StartsWith("P ") && s.Length > 2:
+                    var numval = s.Split(' ')[1].Trim();
+                    if (int.TryParse(numval, out var position))
+                    {
+                        Position = position;
+                    }
+                    else
+                    {
+                        throw new Exception($"Could not understand position reply from focuser : {s}");
+                    }
+
+                    break;
+                default:
+                    throw new Exception($"Unexpected reply from focuser : {text}");
+            }
+        }
+
+        private string ReadTextTimeout(int timeout)
+        {
+
+            string text = null;
+            SpinWait.SpinUntil(() => _readLines.TryDequeue(out text), timeout);
+
+            return text;
+        }
+
+        public void MoveTo(int val)
+        {
+            IsMoving = true;
+            SendCommandAsync($"M {val}");
+        }
+
+        public event PropertyChangedEventHandler PropertyChanged;
+
+        protected virtual void OnPropertyChanged(string propertyName)
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+        }
+
+        protected bool SetField<T>(ref T field, T value, string propertyName)
+        {
+            if (EqualityComparer<T>.Default.Equals(field, value))
+                return false;
+            field = value;
+            OnPropertyChanged(propertyName);
+            return true;
+        }
     }
 
 }

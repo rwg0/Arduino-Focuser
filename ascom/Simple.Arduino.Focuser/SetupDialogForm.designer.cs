@@ -34,7 +34,6 @@ namespace ASCOM.Simple.Arduino.Focuser
             this.comboBox1 = new System.Windows.Forms.ComboBox();
             this.checkBox1 = new System.Windows.Forms.CheckBox();
             this.picASCOM = new System.Windows.Forms.PictureBox();
-            this.checkBox2 = new System.Windows.Forms.CheckBox();
             this.button1 = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.picASCOM)).BeginInit();
             this.SuspendLayout();
@@ -105,20 +104,10 @@ namespace ASCOM.Simple.Arduino.Focuser
             this.picASCOM.Click += new System.EventHandler(this.BrowseToAscom);
             this.picASCOM.DoubleClick += new System.EventHandler(this.BrowseToAscom);
             // 
-            // checkBox2
-            // 
-            this.checkBox2.AutoSize = true;
-            this.checkBox2.Location = new System.Drawing.Point(12, 76);
-            this.checkBox2.Name = "checkBox2";
-            this.checkBox2.Size = new System.Drawing.Size(190, 17);
-            this.checkBox2.TabIndex = 6;
-            this.checkBox2.Text = "Pretend to be an Absolute Focuser";
-            this.checkBox2.UseVisualStyleBackColor = true;
-            // 
             // button1
             // 
             this.button1.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.button1.Location = new System.Drawing.Point(12, 99);
+            this.button1.Location = new System.Drawing.Point(116, 98);
             this.button1.Name = "button1";
             this.button1.Size = new System.Drawing.Size(94, 25);
             this.button1.TabIndex = 7;
@@ -134,7 +123,6 @@ namespace ASCOM.Simple.Arduino.Focuser
             this.CancelButton = this.cmdCancel;
             this.ClientSize = new System.Drawing.Size(222, 213);
             this.Controls.Add(this.button1);
-            this.Controls.Add(this.checkBox2);
             this.Controls.Add(this.checkBox1);
             this.Controls.Add(this.comboBox1);
             this.Controls.Add(this.picASCOM);
@@ -162,7 +150,6 @@ namespace ASCOM.Simple.Arduino.Focuser
         private System.Windows.Forms.PictureBox picASCOM;
         private System.Windows.Forms.ComboBox comboBox1;
         private System.Windows.Forms.CheckBox checkBox1;
-        private System.Windows.Forms.CheckBox checkBox2;
         private System.Windows.Forms.Button button1;
     }
 }
