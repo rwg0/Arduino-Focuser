@@ -4,19 +4,17 @@ extern "C" {
 #include <stdlib.h>
 }
 
-//#include "WProgram.h"
 #include "Focuser.h"
 
-AF_Stepper motor;  // Create our stepper motor. I have mine on port 2 of the motor shield.
 
-long position = 0;
-bool reversed = false;
 
 //
 // Constructor
 //
 Focuser::Focuser(void) {
-  motor.setSpeed(10);  // Set a default RPM of 10
+  speed = FASTSPEED; 
+  position = 0;
+  reversed = false;
 }
 
 void printOK() {
@@ -38,10 +36,6 @@ void Focuser::interpretCommand(Messenger *message) {
       reverse(message->readInt());
       printOK();
       return;
-    case 'L':
-      motor.release();
-      printOK();
-      return;
     case 'P':
       setPosition(message->readLong());
       return;
@@ -55,8 +49,27 @@ void Focuser::interpretCommand(Messenger *message) {
     case 'I':
       Serial.println("R Simple.Arduino.Focuser");
       return;
+    case 'S':
+      if (setSpeed( message->readInt()))
+      {
+        printOK();        
+        return;
+      }
   }
   Serial.println("ERR");
+}
+
+bool Focuser::setSpeed(int speed)
+{
+  if (speed >= 50 && speed <= 500)
+  {
+    this->speed = speed;
+    return true;
+  }
+  else
+  {
+    return false;
+  }
 }
 
 void Focuser::setPosition(long newpos) {
@@ -79,16 +92,16 @@ void Focuser::reverse(bool rev = false) {
 void Focuser::move(long val) {
   long move = val - position;  // calculate move
   int dir = move > 0 ? 1 : -1;
-  int dist = abs(move);
-
-  int moved = 0;
+  long dist = abs(move);
+  int extra = speed >= 200 ? 5 : 2;
+  long moved = 0;
   int fastest = 0;
-  motor.setSpeed(FASTSPEED / 10);
+  motor.setSpeed(speed / 10);
   for (int i = 1; i <= 10; i++) {
-    int steps = i + 5;
+    int steps = i + extra;
     if ((moved + steps) * 2 >= dist)
       break;
-    motor.setSpeed(i * FASTSPEED / 10);
+    motor.setSpeed(i * speed / 10);
     step(steps * dir);
     moved += steps;
     fastest = i;
@@ -97,14 +110,13 @@ void Focuser::move(long val) {
   step(dir * (dist - 2 * moved));
 
   for (int i = fastest; i >= 1; i--) {
-    int steps = i + 5;
-    motor.setSpeed(i * FASTSPEED / 10);
+    int steps = i + extra;
+    motor.setSpeed(i * speed / 10);
     step(steps * dir);
   }
 
 
 
-  motor.release();  // Release the motors when done. This works well for me but might not for others
   Serial.print("P ");
   Serial.println(position);
 }

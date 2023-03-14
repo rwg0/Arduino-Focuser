@@ -17,20 +17,18 @@ AF_Stepper::AF_Stepper() {
   pinMode(dirPin, OUTPUT);
 }
 
-void AF_Stepper::setSpeed(uint16_t stepsPerSecond) {
+void AF_Stepper::setSpeed(uint32_t stepsPerSecond) {
   usperstep = 1000000 / stepsPerSecond;
 
 }
 
-void AF_Stepper::release(void) {
-}
 
 void AF_Stepper::step(uint16_t steps, uint8_t dir) {
   uint32_t uspers = usperstep;
 
   while (steps--) {
     onestep(dir);
-    delayMicroseconds(uspers); // in ms
+    delay(uspers/1000); // in ms
   }
 }
 

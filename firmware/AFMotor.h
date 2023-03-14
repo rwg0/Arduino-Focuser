@@ -15,11 +15,10 @@ class AF_Stepper {
  public:
   AF_Stepper();
   void step(uint16_t steps, uint8_t dir);
-  void setSpeed(uint16_t);
+  void setSpeed(uint32_t);
   void onestep(uint8_t dir);
-  void release(void);
-   uint32_t usperstep;
  private:
+   uint32_t usperstep;
 };
 
 
