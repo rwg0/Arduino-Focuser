@@ -29,13 +29,6 @@
             </Row>
         </CustomTable>
         <Directory Id="TARGETDIR" Name="SourceDir">
-            <Component Id="C__TestApp.exe" Guid="*">
-                <File Id="_TestApp.exe" Name="TestApp.exe" KeyPath="yes" Assembly=".net" AssemblyManifest="_TestApp.exe" AssemblyApplication="_TestApp.exe" DiskId="1" Source="..\Release\TestApp.exe" />
-                <Shortcut Id="_3CA16984F5F34886A7AD08E9AC98AFA7" Directory="DesktopFolder" Name="Focuser Test App" Icon="_90944B7800D869D4C8CA2A.exe" IconIndex="0" Show="normal" WorkingDirectory="TARGETDIR" Advertise="yes" />
-            </Component>
-            <Component Id="C__TestApp.exe.config" Guid="*">
-                <File Id="_TestApp.exe.config" Name="TestApp.exe.config" KeyPath="yes" DiskId="1" Source="..\Release\TestApp.exe.config" />
-            </Component>
             <Directory Id="ProgramMenuFolder" SourceName="User's Programs Menu" />
             <Directory Id="DesktopFolder"  SourceName="User's Desktop" />
             <Directory Id="CommonFilesFolder" SourceName="Common Files Folder">
@@ -49,9 +42,9 @@
             </Directory>
         </Directory>
         <Feature Id="DefaultFeature" ConfigurableDirectory="TARGETDIR" Level="1">
-            <ComponentRef Id="C__TestApp.exe" Primary="yes" />
+
             <ComponentRef Id="C__ASCOM.Simple.Arduino.Focuser.dll" Primary="yes" />
-            <ComponentRef Id="C__TestApp.exe.config" />
+
         </Feature>
         <Icon Id="_90944B7800D869D4C8CA2A.exe" SourceFile=".\Icon\_90944B7800D869D4C8CA2A.exe" />
         <Media Id="1" Cabinet="_6EEBEE89A751BAF3FD49B3CB61608BA1" EmbedCab="yes" />
