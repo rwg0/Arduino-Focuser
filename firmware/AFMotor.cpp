@@ -25,7 +25,6 @@ AF_Stepper::AF_Stepper() {
 
 void AF_Stepper::setSpeed(uint32_t stepsPerSecond) {
   usperstep = 1000000 / stepsPerSecond;
-
 }
 
 
@@ -34,7 +33,7 @@ void AF_Stepper::step(uint16_t steps, uint8_t dir) {
 
   while (steps--) {
     onestep(dir);
-    if (uspers < 32000)
+    if (uspers < 10000)
     {
       delayMicroseconds(uspers);
     }

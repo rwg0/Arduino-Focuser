@@ -59,7 +59,7 @@ void Focuser::interpretCommand(Messenger *message) {
 }
 
 bool Focuser::setSpeed(int speed) {
-  if (speed >= 50 && speed <= 500) {
+  if (speed >= 50 && speed <= 1000) {
     this->speed = speed;
     return true;
   } else {
@@ -88,15 +88,15 @@ void Focuser::move(long val) {
   long move = val - position;  // calculate move
   int dir = move > 0 ? 1 : -1;
   long dist = abs(move);
-  int extra = speed >= 200 ? 5 : 2;
   long moved = 0;
   int fastest = 0;
   motor.setSpeed(speed / 10);
   for (int i = 1; i <= 10; i++) {
-    int steps = i + extra;
+    int s = i * speed / 10;
+    int steps = s/10 + 1;
     if ((moved + steps) * 2 >= dist)
       break;
-    motor.setSpeed(i * speed / 10);
+    motor.setSpeed(s);
     step(steps * dir);
     moved += steps;
     fastest = i;
@@ -105,8 +105,9 @@ void Focuser::move(long val) {
   step(dir * (dist - 2 * moved));
 
   for (int i = fastest; i >= 1; i--) {
-    int steps = i + extra;
-    motor.setSpeed(i * speed / 10);
+    int s = i * speed / 10;
+    int steps = s/10 + 1;
+    motor.setSpeed(s);
     step(steps * dir);
   }
 
