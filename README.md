@@ -1,20 +1,42 @@
 What is it?
 ==========
 
-The Arduino Focuser is an effort to make a computer controlled focuser using an [Arduino](http://www.arduino.cc/), a [Motor Shield](http://adafruit.com/index.php?main_page=product_info&cPath=17_21&products_id=81) and a bipolar stepper motor. The project consists of the Arduino code for the firmware and also an ASCOM driver to control the focuser from any ASCOM compliant software such as [MaxIm DL](http://www.cyanogen.com/).
+This project is forked from [EJHolmes/Arduino Focuser](http://ejholmes.github.com/2010/03/28/the-arduino-focuser.html) and substantially modified.
+
+The goal was to create a simple Arduino Focuser with ASCOM driver. Yes, there are lots of Arduino focusers already, but many are now complex projects that support displays, rotary dials, etc. Others are hosted on SourceForge and have hundreds of different files making it hard to work out what is what. All I wanted was to make a stepper motor turn under ASCOM control without too much complexity. The EJHolmes Arduino sketch made a good start, but I replaced the ASCOM driver, since I already had code for an ASCOM focuser driver that I could re-use.
+
+The hardware used is
+
+* An [Arduino](http://www.arduino.cc/) Uno
+* A [CNC Shield](https://ooznest.co.uk/product/arduino-cnc-shield/)
+* An [A4988 stepper motor controller](https://ooznest.co.uk/product/a4988-stepper-motor-driver/) - often sold with the CNC shield
+* A [NEMA 17](https://ooznest.co.uk/product/nema17-stepper-motors/) Stepper motor
+* A couple of wires and a connector for the stepper motor
+
+Construction is simple:
+
+* Load the sketch onto the Arduino
+* Plug A4988 driver into the CNC Shield 'X' socket. If you wish to use microstepping, you can place jumpers on the 3 pairs of pins under the board (all 3 give x16 microstepping)
+* Solder 2 wires to the VIN and GND pins at the bottom of the CNC Shield and plug them into the + and - motor supply screw terminals on the shield. 
+
+        There are 2 groups of 6 pins in the bottom row of the CNC shield. You need the right-hand most of the left hand group (VIN) and the one to the left of it (GND). Roughly under the center of the 'A' socket.
+
+        These wires take the 12V power from the Arduino supply to run the stepper motor, since it cannot run from 5V USB power. Expect it to draw about 0.2A
+
+* Plug the shield into the Arduino
+* Connect the Arduino to 12V power and USB.
+
+If everything is working then the motor spindle should now be almost impossible to turn.
 
 Building Your Own
 -----------------
 
-1. Download an install the ASCOM driver from the [downloads page](https://github.com/ejholmes/Arduino-Focuser/downloads).
+1. Download an install the ASCOM driver from the [downloads page]() (link pending).
 2. Download and install the [Arduino IDE](http://arduino.cc/).
 3. Download the [source code](https://github.com/ejholmes/Arduino-Focuser).
 4. Connect your Arduino to your computer and compile and upload the firmware within the "firmware" directory in the source code.
 
-ASCOM 6
--------
 
-The driver installer will fail if you have ASCOM 6 installed. You can use the workaround detailed at http://ascom-standards.org/FAQs/Platform5.5only.htm to get around this.
 
 Technical Information
 ---------------------
@@ -24,12 +46,26 @@ Since the Arduino Focuser is based on the Arduino board, the focuser is controll
 The following commands are currently available:
 
 - `: M <position> #` Moves the focuser to `position`.
-- `: L #` Issues a motor.release(). Some steppers get pretty hot when the coils are not released.
 - `: R <0-1> #` Reverses motor direction. 0=false, 1=true.
 - `: P <position> #` Sets the current position to `position`. Note, this does not issue a move, it just tells the focuser that it's at said position.
 - `: G #` Prints out the current position to the serial port. Useful for syncing.
 - `: H #` Doesn't really do anything since anything in the serial buffer will halt the motor. Just prettier.
+- `: S #` Sets motor speed to between 50 and 1000 steps per second. Note that the motor will accelerate and decelerate at the start/end of a move
+- `: I #` Repeats the identification text sent by the focuser at connection. The text is 'R Simple.Arduino.Focuser'
+
+Note that carriage return/line feeds after the commands are not required. A `:` character is always interpreted as starting a new command.
+
+The following replies should be expected
+
+- `P XXXX` Reports the current position and indicates that the motor is stopped. This is the final response to 'M' commands and to 'P' and 'G' commands.
+
+- `M XXXX` Reports the current position during a move, reported when the step position is a multiple of 100, so may not be reported during short moves
+
+- `OK` Indicates that a command has been accepted (ie set speed)
+- `ERR` Indicates that a command was not accepted either due to a bad command or bad parameter
+
+Responses are followed by a line termination of `\r\n`
 
 
-- Uses the [AFMotor library](http://www.ladyada.net/make/mshield/use.html) and a modified Messenger library.
-- Code is for the motor shield from [adafruit industries](http://adafruit.com/index.php?main_page=product_info&cPath=17_21&products_id=81).
+
+
