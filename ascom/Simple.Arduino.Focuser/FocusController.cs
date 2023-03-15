@@ -74,8 +74,10 @@ namespace ASCOM.Simple.Arduino.Focuser
                 _pending = index == _pending.Length - 1 ? "" : _pending.Substring(index);
                 if (IsMoving)
                 {
-                    ProcessPosition(line);
-                    IsMoving = false;
+                    if (ProcessPosition(line))
+                    {
+                        IsMoving = false;
+                    }
                 }
                 else
                     _readLines.Enqueue(line);
@@ -151,15 +153,15 @@ namespace ASCOM.Simple.Arduino.Focuser
 
             ProcessPosition(text);
         }
-
-        private void ProcessPosition(string text)
+        // returns true if stationary
+        private bool ProcessPosition(string text)
         {
             text = text.Trim();
 
             switch (text)
             {
                 case "OK":
-                    return;
+                    return true;
                 case "ERR":
                     throw new Exception("Error reply from focuser");
                 case string s when s.StartsWith("P ") && s.Length > 2:
@@ -167,13 +169,21 @@ namespace ASCOM.Simple.Arduino.Focuser
                     if (int.TryParse(numval, out var position))
                     {
                         Position = position;
-                    }
-                    else
-                    {
-                        throw new Exception($"Could not understand position reply from focuser : {s}");
+                        return true;
                     }
 
-                    break;
+                    throw new Exception($"Could not understand position reply from focuser : {s}");
+
+
+                case string s when s.StartsWith("M ") && s.Length > 2:
+                    var numval2 = s.Split(' ')[1].Trim();
+                    if (int.TryParse(numval2, out var position2))
+                    {
+                        Position = position2;
+                    }
+
+                    return false;
+
                 default:
                     throw new Exception($"Unexpected reply from focuser : {text}");
             }
