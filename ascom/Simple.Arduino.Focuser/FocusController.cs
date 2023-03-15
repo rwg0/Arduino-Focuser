@@ -90,7 +90,7 @@ namespace ASCOM.Simple.Arduino.Focuser
             m_port?.Close();
         }
 
-        public bool Reversed { get; set; }
+    
 
         public void Halt()
         {
@@ -212,6 +212,10 @@ namespace ASCOM.Simple.Arduino.Focuser
         }
 
 
+        public void SetSpeed(int speed)
+        { 
+            SendCommand($"S {speed}");
+        }
     }
 
 }

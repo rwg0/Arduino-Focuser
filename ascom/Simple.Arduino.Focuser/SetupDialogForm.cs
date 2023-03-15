@@ -8,7 +8,7 @@ namespace ASCOM.Simple.Arduino.Focuser
     [ComVisible(false)]					// Form not registered for COM!
     public partial class SetupDialogForm : Form
     {
-        public SetupDialogForm(string defaultPort, bool reversed, int position)
+        public SetupDialogForm(string defaultPort, bool reversed, int position, int speed)
         {
             InitializeComponent();
 
@@ -35,11 +35,15 @@ namespace ASCOM.Simple.Arduino.Focuser
                 cmdOK.Enabled = false;
 
             numericUpDown1.Value = position;
+            numericUpDown2.Value = speed; 
+
+            Position = position;
+            Speed = speed;
         }
 
         internal string GetSelectedPort()
         {
-            return comboBox1.SelectedItem as String;
+            return (string)comboBox1.SelectedItem;
         }
 
         internal bool IsReversed()
@@ -81,5 +85,13 @@ namespace ASCOM.Simple.Arduino.Focuser
         }
 
         public int Position { get; set; }
+
+        private void buttonSpeed_Click(object sender, EventArgs e)
+        {
+            Speed = (int)numericUpDown2.Value;
+            
+        }
+
+        public int Speed { get; set; }
     }
 }

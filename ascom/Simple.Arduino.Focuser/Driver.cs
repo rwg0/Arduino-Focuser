@@ -53,6 +53,7 @@ namespace ASCOM.Simple.Arduino.Focuser
         FocusController _controller;
         Profile _profile;
         private bool _reversed;
+        private int _speed;
 
         //
         // Constructor - Must be public for COM registration!
@@ -77,12 +78,15 @@ namespace ASCOM.Simple.Arduino.Focuser
                 P.Register(s_csDriverID, s_csDriverDescription);
             else
                 P.Unregister(s_csDriverID);
-            try										// In case Helper becomes native .NET
+            try // In case Helper becomes native .NET
             {
                 P.Dispose();
             }
-            catch (Exception) { }
-            P = null;
+            catch (Exception)
+            {
+                // ignored
+            }
+            //P = null;
         }
 
         [ComRegisterFunction]
@@ -153,19 +157,13 @@ namespace ASCOM.Simple.Arduino.Focuser
 
         private int GetSavedPosition()
         {
-            var pos = GetValue("LastPos");
-            if (!string.IsNullOrEmpty(pos))
-            {
-                if (int.TryParse(pos, out var position))
-                    return position;
-                    
-            }
+            return GetValue("LastPos", 25000);
 
-            return 25000;
         }
 
         private void BuildController()
         {
+            SetFlags();
             if (string.IsNullOrEmpty(GetPort()))
             {
                 SetupDialog();
@@ -182,6 +180,7 @@ namespace ASCOM.Simple.Arduino.Focuser
             }
             _controller.PropertyChanged += ControllerOnPropertyChanged;
             _controller.InitializePosition(GetSavedPosition());
+            _controller.SetSpeed(_speed);
             _controller.SetReverse(_reversed);
         }
 
@@ -220,12 +219,7 @@ namespace ASCOM.Simple.Arduino.Focuser
             if (!Link)
                 throw new InvalidOperationException("Focuser link not activated");
 
-            _controller.Reversed = _reversed;
-
-
             _controller.MoveTo(val);
-
-//            
         }
 
         public bool Connected
@@ -253,11 +247,13 @@ namespace ASCOM.Simple.Arduino.Focuser
         public void SetupDialog()
         {
             var initialPosition = _controller?.Position ?? GetSavedPosition();
-            SetupDialogForm sf = new SetupDialogForm(GetPort(), _reversed, initialPosition);
+            SetFlags();
+            SetupDialogForm sf = new SetupDialogForm(GetPort(), _reversed, initialPosition, _speed);
             if (sf.ShowDialog() == System.Windows.Forms.DialogResult.OK)
             {
                 SetPort(sf.GetSelectedPort());
                 SetValue("reverse", sf.IsReversed().ToString());
+                SetValue("speed", sf.Speed.ToString());
                 if (_controller != null)
                 {
                     _controller.InitializePosition(sf.Position);
@@ -268,7 +264,6 @@ namespace ASCOM.Simple.Arduino.Focuser
                 {
                     SavePosition(sf.Position);
                 }
-                SetFlags();
             }
         }
 
@@ -297,16 +292,27 @@ namespace ASCOM.Simple.Arduino.Focuser
             _profile.WriteValue(s_csDriverID, key, value ?? "", "");
         }
 
-        private string GetValue(string key)
+        private string GetValue(string key, string defaultVal = "")
         {
-            return _profile.GetValue(s_csDriverID, key, "");
+            return _profile.GetValue(s_csDriverID, key, defaultVal);
         }
 
+        private int GetValue(string key, int defaultVal)
+        {
+            var valText = GetValue(key);
+            if (string.IsNullOrWhiteSpace(valText))
+                return defaultVal;
+
+            if (int.TryParse(valText, out var value))
+                return value;
+
+            return defaultVal;
+        }
 
         private void SetFlags()
         {
             _reversed = GetValue("reverse") == "True";
-
+            _speed = GetValue("speed", 200);
         }
 
 
