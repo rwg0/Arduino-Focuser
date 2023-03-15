@@ -12,7 +12,7 @@ extern "C" {
 // Constructor
 //
 Focuser::Focuser(void) {
-  speed = FASTSPEED; 
+  speed = FASTSPEED;
   position = 0;
   reversed = false;
 }
@@ -50,24 +50,19 @@ void Focuser::interpretCommand(Messenger *message) {
       Serial.println("R Simple.Arduino.Focuser");
       return;
     case 'S':
-      if (setSpeed( message->readInt()))
-      {
-        printOK();        
+      if (setSpeed(message->readInt())) {
+        printOK();
         return;
       }
   }
   Serial.println("ERR");
 }
 
-bool Focuser::setSpeed(int speed)
-{
-  if (speed >= 50 && speed <= 500)
-  {
+bool Focuser::setSpeed(int speed) {
+  if (speed >= 50 && speed <= 500) {
     this->speed = speed;
     return true;
-  }
-  else
-  {
+  } else {
     return false;
   }
 }
@@ -128,6 +123,10 @@ void Focuser::step(long val) {
         break;
       motor.step(1, (reversed) ? FORWARD : BACKWARD);
       position++;
+      if (position % 100 == 0) {
+        Serial.print("M ");
+        Serial.println(position);
+      }
     }
   } else if (val < 0) {  // else if move is negative, move backward
     long counter = abs(val);
@@ -136,6 +135,10 @@ void Focuser::step(long val) {
         break;
       motor.step(1, (reversed) ? BACKWARD : FORWARD);
       position--;
+      if (position % 100 == 0) {
+        Serial.print("M ");
+        Serial.println(position);
+      }
     }
   }
 }

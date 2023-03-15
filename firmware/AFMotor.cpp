@@ -14,6 +14,8 @@
 // For CNC shield, need to enable by putting pin 8 low
 #define enablePin 8
 
+#define PULSE_TIME 20
+
 AF_Stepper::AF_Stepper() {
   pinMode(stepPin, OUTPUT);
   pinMode(dirPin, OUTPUT);
@@ -28,11 +30,18 @@ void AF_Stepper::setSpeed(uint32_t stepsPerSecond) {
 
 
 void AF_Stepper::step(uint16_t steps, uint8_t dir) {
-  uint32_t uspers = usperstep;
+  uint32_t uspers = usperstep - 2 * PULSE_TIME;
 
   while (steps--) {
     onestep(dir);
-    delay(uspers/1000); // in ms
+    if (uspers < 32000)
+    {
+      delayMicroseconds(uspers);
+    }
+    else
+    {
+      delay(uspers/1000); // in ms
+    }
   }
 }
 
@@ -40,8 +49,8 @@ void AF_Stepper::onestep(uint8_t dir) {
   digitalWrite(dirPin, dir ? HIGH : LOW) ;
 
   digitalWrite(stepPin, HIGH);
-  delayMicroseconds(20);
+  delayMicroseconds(PULSE_TIME);
   digitalWrite(stepPin, LOW);
-  delayMicroseconds(20);
+  delayMicroseconds(PULSE_TIME);
 }
 
