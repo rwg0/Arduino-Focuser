@@ -19,14 +19,17 @@ Construction is simple:
 * Plug A4988 driver into the CNC Shield 'X' socket. If you wish to use microstepping, you can place jumpers on the 3 pairs of pins under the board (all 3 give x16 microstepping)
 * Solder 2 wires to the VIN and GND pins at the bottom of the CNC Shield and plug them into the + and - motor supply screw terminals on the shield. 
 
+        View the shield from the side with the sockets for the stepper drivers on, with the reset button top left. If the shield is plugged into the Arduino then the Arduino USB socket will be on the left near the reset button on the shield.
+        
         There are 2 groups of 6 pins in the bottom row of the CNC shield. You need the right-hand most of the left hand group (VIN) and the one to the left of it (GND). Roughly under the center of the 'A' socket.
 
         These wires take the 12V power from the Arduino supply to run the stepper motor, since it cannot run from 5V USB power. Expect it to draw about 0.2A
 
 * Plug the shield into the Arduino
+* Connect the stepper motor to the 4 pins to the right of the A4988 board (when viewed with the shield reset button top left). The wiring order from top to bottom should be blue, red, black, green.
 * Connect the Arduino to 12V power and USB.
 
-If everything is working then the motor spindle should now be almost impossible to turn.
+If everything is working then the motor spindle should now be almost impossible to turn because the stepper motor fields will be activated to hold it in place.
 
 Building Your Own
 -----------------
