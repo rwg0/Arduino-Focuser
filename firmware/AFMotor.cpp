@@ -8,13 +8,17 @@
 #include "AFMotor.h"
 #include "HardwareSerial.h"
 
-#define dirPin 2
-#define stepPin 3
-
+// For CNC shield, motor channel X
+#define dirPin 5
+#define stepPin 2
+// For CNC shield, need to enable by putting pin 8 low
+#define enablePin 8
 
 AF_Stepper::AF_Stepper() {
   pinMode(stepPin, OUTPUT);
   pinMode(dirPin, OUTPUT);
+  pinMode(enablePin, OUTPUT);
+  digitalWrite(enablePin, LOW);
 }
 
 void AF_Stepper::setSpeed(uint32_t stepsPerSecond) {
