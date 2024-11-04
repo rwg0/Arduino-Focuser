@@ -36,8 +36,12 @@ namespace ASCOM.Simple.Arduino.Focuser
             SendRawCommand("I");
             string id = ReadTextTimeout(1000);
 
-            if (id?.Trim() != "R Simple.Arduino.Focuser")
+            var trim = id?.Trim();
+            if (trim != "R Simple.Arduino.Focuser")
+            {
+                m_port.Close();
                 throw new Exception($"Incorrect identification from focuser : {id}");
+            }
 
             while (_readLines.Count > 0)
                 _readLines.TryDequeue(out var _);
