@@ -11,7 +11,7 @@ namespace ASCOM.Simple.Arduino.Focuser
 {
     class FocusController : IDisposable, INotifyPropertyChanged
     {
-        private readonly SerialPort m_port;
+        private readonly SerialPort _port;
         private bool _isMoving;
         private string _pending = "";
         private readonly ConcurrentQueue<string> _readLines = new ConcurrentQueue<string>();
@@ -19,19 +19,19 @@ namespace ASCOM.Simple.Arduino.Focuser
         public FocusController(string portName)
         {
 
-            m_port = new SerialPort(portName);
-            m_port.BaudRate = 9600;
-            m_port.Parity = Parity.None;
-            m_port.DataBits = 8;
-            m_port.Handshake = Handshake.None;
-            m_port.StopBits = StopBits.One;
-            m_port.ReadTimeout = 500;
-            m_port.WriteTimeout = 500;
+            _port = new SerialPort(portName);
+            _port.BaudRate = 9600;
+            _port.Parity = Parity.None;
+            _port.DataBits = 8;
+            _port.Handshake = Handshake.None;
+            _port.StopBits = StopBits.One;
+            _port.ReadTimeout = 500;
+            _port.WriteTimeout = 500;
 
-            m_port.RtsEnable = false;
-            m_port.DataReceived += _port_DataReceived;
+            _port.RtsEnable = false;
+            _port.DataReceived += _port_DataReceived;
 
-            m_port.Open();
+            _port.Open();
 
             SendRawCommand("I");
             string id = ReadTextTimeout(1000);
@@ -39,7 +39,7 @@ namespace ASCOM.Simple.Arduino.Focuser
             var trim = id?.Trim();
             if (trim != "R Simple.Arduino.Focuser")
             {
-                m_port.Close();
+                _port.Close();
                 throw new Exception($"Incorrect identification from focuser : {id}");
             }
 
@@ -65,7 +65,7 @@ namespace ASCOM.Simple.Arduino.Focuser
 
         private void ReadAnyPortData()
         {
-            _pending += m_port.ReadExisting();
+            _pending += _port.ReadExisting();
             while (_pending.Contains("\n"))
             {
                 var index = _pending.IndexOf("\n");
@@ -90,8 +90,8 @@ namespace ASCOM.Simple.Arduino.Focuser
 
         public void Dispose()
         {
-            m_port.DataReceived -= _port_DataReceived;
-            m_port?.Close();
+            _port.DataReceived -= _port_DataReceived;
+            _port?.Close();
         }
 
     
@@ -145,7 +145,7 @@ namespace ASCOM.Simple.Arduino.Focuser
 
         private void SendRawCommand(string s)
         {
-            m_port.Write($": {s} #");
+            _port.Write($": {s} #");
         }
 
         private void ReadPosition(int timeout)

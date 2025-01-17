@@ -118,7 +118,8 @@ namespace ASCOM.Simple.Arduino.Focuser
         {
             if (_controller != null)
             {
-                SavePosition(_controller.Position);
+                if (_controller.Position != 0)
+                    SavePosition(_controller.Position);
                 _controller.PropertyChanged -= ControllerOnPropertyChanged;
                 _controller?.Dispose();
                 _controller = null;
@@ -167,6 +168,7 @@ namespace ASCOM.Simple.Arduino.Focuser
             if (string.IsNullOrEmpty(GetPort()))
             {
                 SetupDialog();
+                CleanupController();
             }
             try
             {
@@ -176,6 +178,7 @@ namespace ASCOM.Simple.Arduino.Focuser
             {
                 Trace.WriteLine(e.Message);
                 SetupDialog();
+                CleanupController();
                 _controller = new FocusController(GetPort());
             }
             _controller.PropertyChanged += ControllerOnPropertyChanged;
