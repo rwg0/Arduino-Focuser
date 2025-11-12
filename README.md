@@ -31,6 +31,8 @@ Construction is simple:
 
 If everything is working then the motor spindle should now be almost impossible to turn because the stepper motor fields will be activated to hold it in place.
 
+![Wiring](https://github.com/rwg0/Arduino-Focuser/blob/6ff70877a0cab6d062db13310570f78681115545/WiringExample.jpg)
+
 Building Your Own
 -----------------
 
